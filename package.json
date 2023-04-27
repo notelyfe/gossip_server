@@ -1,0 +1,29 @@
+{
+  "name": "gossip_server",
+  "version": "1.0.0",
+  "description": "This server is designed to provide service for the gossip web-site",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "notelyfe",
+    "gossip",
+    "chat",
+    "messaging"
+  ],
+  "author": "notelyfe",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
