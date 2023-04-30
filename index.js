@@ -19,6 +19,7 @@ app.use(cookieParser());
 app.use('/api/admin', require('./src/Routes/admin'))
 app.use('/api/refresh', require('./src/Routes/refreshToken'))
 app.use('/api/logout', require('./src/Routes/logout'))
+app.use('/api/user', require('./src/Routes/user'))
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`)
