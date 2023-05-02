@@ -1,37 +1,38 @@
 const nodemailer = require('nodemailer')
 
-const main = async () => {
+const senderEmail = process.env.SENDER_EMAIL
+const smtpUserName = process.env.SMTP_USER_NAME
+const smtpPassword = process.env.SMTP_PASSWORD
+const smtpPort = process.env.SMTP_PORT
+const smtpHost = process.env.SMTP_HOST
+
+const verificationMail = async (receiver) => {
 
     try {
 
-        let testAccount = await nodemailer.createTestAccount();
-
         let transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
-            secure: false,
+            host: smtpHost,
+            port: smtpPort,
+            secure: true,
 
             auth: {
-                user: testAccount.user,
-                pass: testAccount.pass,
+                user: smtpUserName,
+                pass: smtpPassword
             },
         });
 
-        let info = await transporter.sendMail({
-            from: 'admin@notelyfe.tech',
-            to: 'notelyfe@gmail.com',
-            subject: 'Hello',
-            text: 'Hello from gossip server',
-            html: "<b>Hello World</b>"
-        });
-
-        console.log("Message send: %s", info.messageId);
-
-        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        let mail = await transporter.sendMail({
+            from: senderEmail,
+            to: receiver,
+            subject: "Email Verification",
+            text: "Thank You For joining with us"
+        })
 
     } catch (error) {
         console.log("error", error)
     }
 }
 
-module.exports = { main }
+module.exports = {
+    verificationMail
+}

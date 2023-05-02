@@ -11,7 +11,7 @@ const UserSchema = new Schema({
     required: true,
     unique: true
   },
-  email:{
+  email: {
     type: String,
     required: true,
     unique: true
@@ -20,13 +20,9 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
-  user_type:{
+  user_type: {
     type: String,
     required: true
-  },
-  created_on: {
-    type: Date,
-    default: Date.now
   },
   isVerified: {
     type: Boolean,
@@ -36,6 +32,8 @@ const UserSchema = new Schema({
     type: Boolean,
     default: true
   }
+}, {
+  timestamps: true
 });
 
 module.exports = mongoose.model('User', UserSchema);

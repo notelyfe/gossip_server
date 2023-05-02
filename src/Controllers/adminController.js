@@ -26,15 +26,12 @@ const createAdmin = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const securePass = await bcrypt.hash(req.body.password, salt)
 
-        let createdDate = Date.now()
-
         admin = await Admin.create({
             name: req.body.name,
             user_id: req.body.user_id,
             email: req.body.email,
             password: securePass,
             user_type: req.body.user_type,
-            created_on: createdDate,
             isVerified: false,
             isActive: true
         })

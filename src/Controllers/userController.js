@@ -2,6 +2,7 @@ const User = require('../Model/User')
 const { validationResult } = require('express-validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const { verificationMail } = require('../Services/mailService')
 
 const getUser = async (req, res) => {
 
@@ -33,20 +34,19 @@ const createUser = async (req, res) => {
         const salt = await bcrypt.genSalt(10)
         const securePass = await bcrypt.hash(req.body.password, salt)
 
-        let createdOn = Date.now()
-
         user = await User.create({
             name: req.body.name,
             user_id: req.body.user_id,
             email: req.body.email,
             password: securePass,
             user_type: "user",
-            created_on: createdOn,
             isVerified: false,
             isActive: true
         })
 
         res.status(200).json({ message: "User Created Successfully" })
+
+        // let msg = await verificationMail(req.body.email)
 
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error" })
@@ -84,9 +84,10 @@ const login = async (req, res) => {
                     id: user.id
                 }
             }
-            const access_token = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15m" })
+            const access_token = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "24h" })
             const refresh_token = jwt.sign(data, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "24h" })
 
+            // res.cookie("jwt", refresh_token, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })
             res.cookie("jwt", refresh_token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
             res.json({ access_token })
 

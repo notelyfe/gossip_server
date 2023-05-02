@@ -9,8 +9,8 @@ const cookieParser = require('cookie-parser')
 
 const port = process.env.PORT
 
-// app.use(cors(corsControl))
 app.use(cors())
+// app.use(cors(corsControl))
 app.use(express.json())
 
 // <--middleware for cookies-->
@@ -20,6 +20,8 @@ app.use('/api/admin', require('./src/Routes/admin'))
 app.use('/api/refresh', require('./src/Routes/refreshToken'))
 app.use('/api/logout', require('./src/Routes/logout'))
 app.use('/api/user', require('./src/Routes/user'))
+app.use('/api/chat', require('./src/Routes/chat'))
+app.use('/api/msg', require('./src/Routes/message'))
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`)

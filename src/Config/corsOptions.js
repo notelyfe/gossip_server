@@ -1,3 +1,4 @@
+// const whitelist = ['http://localhost:3000']
 const whitelist = []
 
 const corsControl = {
@@ -8,6 +9,7 @@ const corsControl = {
             callback(new Error('Not Allowed By Cors'))
         }
     },
+    // credentials: true,
     optionsSuccessStatus: 200
 }
 
