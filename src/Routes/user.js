@@ -1,11 +1,10 @@
 const express = require('express')
 const router = express.Router()
-const { getUser, createUser, login, getUserData, verifyUser } = require('../Controllers/userController')
+const { getAllUser, createUser, login, getUserData, verifyUser } = require('../Controllers/userController')
 const { body } = require('express-validator')
 const verifyJWT = require('../Middleware/verifyJwt')
-const { main } = require('../Services/mailService')
 
-router.get('/getuser', getUser)
+router.get('/getuser', verifyJWT, getAllUser)
 
 router.post('/createUser', [
     body("name").isLength({ min: 5 }),
@@ -14,7 +13,7 @@ router.post('/createUser', [
     body("password").isLength({ min: 8 }),
 ], createUser)
 
-// router.post('/verify', verifyUser)
+router.get('/verify', verifyUser)
 
 router.post('/login', login)
 

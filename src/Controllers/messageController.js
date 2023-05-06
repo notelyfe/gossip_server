@@ -19,13 +19,6 @@ const sendMessage = async (req, res) => {
             isDeleted: false
         })
 
-        newMsg = await newMsg.populate("sender", "name");
-        newMsg = await newMsg.populate("chat");
-        newMsg = await User.populate(newMsg, {
-            path: "chat.users",
-            select: "email"
-        });
-
         await Chat.findByIdAndUpdate({ _id: req.body.chatId }, { latestMsg: newMsg })
 
         res.json(newMsg)

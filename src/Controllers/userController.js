@@ -4,11 +4,25 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { verificationMail } = require('../Services/mailService')
 
-const getUser = async (req, res) => {
+const accessToken = process.env.ACCESS_TOKEN_SECRET
+const refreshToken = process.env.REFRESH_TOKEN_SECRET
+const clientBaseUrl = process.env.CLIENT_BASE_URL
 
-    const user = await User.find().select("-password")
-    res.json(user)
+const getAllUser = async (req, res) => {
 
+    try {
+
+        let user = await User.find().select("-password")
+
+        user = user.filter((item) => {
+            return item._id.toString() !== req.user.id
+        })
+
+        res.json(user)
+
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error" })
+    }
 }
 
 const createUser = async (req, res) => {
@@ -20,8 +34,8 @@ const createUser = async (req, res) => {
             return res.status(400).json({ errors: errors.array() })
         }
 
-        let userId = await User.findOne({ user_id: req.body.user_id })
-        let user = await User.findOne({ email: req.body.email })
+        let userId = await User.findOne({ user_id: req.body.user_id.toLowerCase() })
+        let user = await User.findOne({ email: req.body.email.toLowerCase() })
 
         if (user) {
             return res.status(400).json({ message: "User with this email already exist" })
@@ -36,17 +50,26 @@ const createUser = async (req, res) => {
 
         user = await User.create({
             name: req.body.name,
-            user_id: req.body.user_id,
-            email: req.body.email,
+            user_id: req.body.user_id.toLowerCase(),
+            email: req.body.email.toLowerCase(),
             password: securePass,
             user_type: "user",
             isVerified: false,
             isActive: true
         })
 
+        let data = {
+            user: {
+                id: user._id,
+                userType: user.user_type
+            }
+        }
+
+        const verification_token = jwt.sign(data, accessToken, { expiresIn: "24h" })
+
         res.status(200).json({ message: "User Created Successfully" })
 
-        // let msg = await verificationMail(req.body.email)
+        await verificationMail(req.body.email, verification_token)
 
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error" })
@@ -55,6 +78,24 @@ const createUser = async (req, res) => {
 
 const verifyUser = async (req, res) => {
     try {
+
+        let verifyToken = req.query.verificationToken
+
+        if (!verifyToken) {
+            return res.sendStatus(401)
+        }
+
+        let userData = jwt.verify(verifyToken, accessToken)
+
+        const user = await User.findById({ _id: userData?.user?.id })
+
+        if (!user) {
+            return res.status(401).json({ message: "token expired or tempered" })
+        }
+
+        await User.findByIdAndUpdate({ _id: userData?.user?.id }, { isVerified: true })
+
+        res.redirect(`${clientBaseUrl}/login`)
 
     } catch (error) {
         res.status(500).json({ message: 'Internal Server Error' })
@@ -66,14 +107,18 @@ const login = async (req, res) => {
 
         const { login_cred, password } = req.body
 
-        const findByUserId = await User.findOne({ user_id: login_cred })
-        const findByEmail = await User.findOne({ email: login_cred })
+        const findByUserId = await User.findOne({ user_id: login_cred.toLowerCase() })
+        const findByEmail = await User.findOne({ email: login_cred.toLowerCase() })
 
         if (!findByUserId && !findByEmail) {
             return res.status(400).json({ message: "Invalid Credentials" })
         }
 
         let user = findByEmail ? findByEmail : findByUserId
+
+        if (user?.isVerified === false) {
+            return res.status(403).json({ message: "Please verify you email to login" })
+        }
 
         let passCompare = await bcrypt.compare(password, user.password)
 
@@ -84,8 +129,8 @@ const login = async (req, res) => {
                     id: user.id
                 }
             }
-            const access_token = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "24h" })
-            const refresh_token = jwt.sign(data, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "24h" })
+            const access_token = jwt.sign(data, accessToken, { expiresIn: "24h" })
+            const refresh_token = jwt.sign(data, refreshToken, { expiresIn: "24h" })
 
             // res.cookie("jwt", refresh_token, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })
             res.cookie("jwt", refresh_token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
@@ -112,7 +157,7 @@ const getUserData = async (req, res) => {
 }
 
 module.exports = {
-    getUser,
+    getAllUser,
     createUser,
     login,
     getUserData,

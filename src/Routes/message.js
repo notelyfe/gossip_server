@@ -9,6 +9,6 @@ router.post('/sendMsg', verifyJWT, [
     body("chatId").isLength({ min: 1 })
 ], sendMessage)
 
-router.get('/getAllMsg', verifyJWT, getAllMsg)
+router.post('/getAllMsg', verifyJWT, getAllMsg)
 
 module.exports = router
