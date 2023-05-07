@@ -6,11 +6,12 @@ const app = express()
 const cors = require('cors')
 const corsControl = require('./src/Config/corsOptions')
 const cookieParser = require('cookie-parser')
+const { socketConnection } = require('./src/Socket/socket')
 
 const port = process.env.PORT
 
-app.use(cors())
-// app.use(cors(corsControl))
+// app.use(cors())
+app.use(cors(corsControl))
 app.use(express.json())
 
 // <--middleware for cookies-->
@@ -23,9 +24,11 @@ app.use('/api/user', require('./src/Routes/user'))
 app.use('/api/chat', require('./src/Routes/chat'))
 app.use('/api/msg', require('./src/Routes/message'))
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Server is running on port ${port}`)
 })
+
+socketConnection(server)
 
 app.get('*', (req, res) => {
     res.json({ message: "404 Page Not Found" })
