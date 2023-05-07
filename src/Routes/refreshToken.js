@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
             }
         }
 
-        const access_token = jwt.sign(newData, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '30s' })
+        const access_token = jwt.sign(newData, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' })
 
         res.json({ access_token })
 
