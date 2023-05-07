@@ -129,11 +129,11 @@ const login = async (req, res) => {
                     id: user.id
                 }
             }
-            const access_token = jwt.sign(data, accessToken, { expiresIn: "24h" })
-            const refresh_token = jwt.sign(data, refreshToken, { expiresIn: "24h" })
+            const access_token = jwt.sign(data, accessToken, { expiresIn: "30s" })
+            const refresh_token = jwt.sign(data, refreshToken, { expiresIn: "2h" })
 
-            // res.cookie("jwt", refresh_token, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })
-            res.cookie("jwt", refresh_token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
+            res.cookie("jwt", refresh_token, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })
+            // res.cookie("jwt", refresh_token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
             res.json({ access_token })
 
         } else {
