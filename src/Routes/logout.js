@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
         res.sendStatus(204)
 
     } catch (error) {
-        res.status(500).json({ message: "Internal Server Error" })
+        res.sendStatus(500)
     }
 })
 

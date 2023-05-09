@@ -31,7 +31,23 @@ const UserSchema = new Schema({
   isActive: {
     type: Boolean,
     default: true
-  }
+  },
+  profile_pic: {
+    type: String,
+  },
+  profile_key: {
+    type: String,
+  },
+  restriction: [{
+    isRestricted: {
+      type: Boolean,
+      default: false
+    },
+    reason: {
+      type: String,
+      require: true
+    }
+  }]
 }, {
   timestamps: true
 });

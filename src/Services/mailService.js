@@ -6,23 +6,24 @@ const smtpPassword = process.env.SMTP_PASSWORD
 const smtpPort = process.env.SMTP_PORT
 const smtpHost = process.env.SMTP_HOST
 const serverBaseUrl = process.env.SERVER_BASE_URL
+const clientBaseUrl = process.env.CLIENT_BASE_URL
+
+const transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: smtpPort,
+    secureConnection: false,
+    auth: {
+        user: smtpUserName,
+        pass: smtpPassword
+    },
+    tls: {
+        ciphers: 'SSLv3'
+    }
+});
 
 const verificationMail = async (receiver, verificationToken) => {
 
     try {
-
-        let transporter = nodemailer.createTransport({
-            host: smtpHost,
-            port: smtpPort,
-            secureConnection: false,
-            auth: {
-                user: smtpUserName,
-                pass: smtpPassword
-            },
-            tls: {
-                ciphers: 'SSLv3'
-            }
-        });
 
         await transporter.sendMail({
             from: senderEmail,
@@ -40,6 +41,26 @@ const verificationMail = async (receiver, verificationToken) => {
     }
 }
 
+const passwordResetVerification = async (receiver, verificationToken) => {
+
+    try {
+
+        await transporter.sendMail({
+            from: senderEmail,
+            to: receiver,
+            subject: "Password Reset",
+            html: `<p> Please click on the <a href="${clientBaseUrl}/reset-password?verificationToken=${verificationToken}">Verify Email</a> link to continue</p>
+            <br />
+            <p style="color: red;">Note - This link is only valid for 10 minutes </p>`
+        })
+
+    } catch (error) {
+        console.log("error", error)
+    }
+
+}
+
 module.exports = {
-    verificationMail
+    verificationMail,
+    passwordResetVerification
 }

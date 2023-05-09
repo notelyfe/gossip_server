@@ -42,7 +42,22 @@ const getAllMsg = async (req, res) => {
     }
 }
 
+const deleteMessages = async (req, res) => {
+    try {
+
+        let msgId = req.body.msgId;
+
+        await Message.findByIdAndDelete({ _id: msgId })
+
+        res.status(200).json({ message: "Delete successfully" })
+
+    } catch (error) {
+        res.sendStatus(500)
+    }
+}
+
 module.exports = {
     sendMessage,
-    getAllMsg
+    getAllMsg,
+    deleteMessages
 }

@@ -2,7 +2,8 @@ const User = require('../Model/User')
 const { validationResult } = require('express-validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const { verificationMail } = require('../Services/mailService')
+const { verificationMail, passwordResetVerification } = require('../Services/mailService')
+const { uploadFile, deleteFile, editFile } = require('../Services/awsSdk')
 
 const accessToken = process.env.ACCESS_TOKEN_SECRET
 const refreshToken = process.env.REFRESH_TOKEN_SECRET
@@ -12,7 +13,7 @@ const getAllUser = async (req, res) => {
 
     try {
 
-        let user = await User.find().select("-password")
+        let user = await User.find().select(["-password", "-profile_key"])
 
         user = user.filter((item) => {
             return item._id.toString() !== req.user.id
@@ -55,7 +56,13 @@ const createUser = async (req, res) => {
             password: securePass,
             user_type: "user",
             isVerified: false,
-            isActive: true
+            isActive: true,
+            restriction: [{
+                isRestricted: false,
+                reason: ''
+            }],
+            profile_pic: null,
+            profile_key: null
         })
 
         let data = {
@@ -149,10 +156,127 @@ const getUserData = async (req, res) => {
 
     try {
         const userId = req.user.id;
-        const user = await User.findById(userId).select('-password')
+        const user = await User.findById(userId).select(['-password', '-profile_key'])
         res.json(user)
     } catch (error) {
         res.status(500).json({ message: 'Internal Server Error' })
+    }
+}
+
+const editUserInfo = async (req, res) => {
+    try {
+
+        const userInfo = await User.findById({ _id: req.user.id })
+        if (!userInfo) {
+            return res.status(401).json({ message: "token is tempered" })
+        }
+
+        const newUserInfo = ({
+            name: req.body.name,
+            user_id: req.body.userId.toLowerCase(),
+            email: req.body.email.toLowerCase(),
+        })
+
+        await User.findByIdAndUpdate({ _id: req.user.id }, newUserInfo)
+        res.status(200).json({ message: "updated successfully" })
+
+    } catch (error) {
+        res.sendStatus(500)
+    }
+}
+
+const editUserProfile = async (req, res) => {
+    try {
+
+        let user = await User.findById({ _id: req.user.id })
+
+        if (!user) {
+            return res.status(401).json({ message: "action not allowed" })
+        }
+
+        if (user.profile_key === null) {
+
+            const profile_image = await uploadFile(req.file, user?.email)
+
+            let imageInfo = ({
+                profile_pic: profile_image.Location,
+                profile_key: profile_image.Key
+            })
+
+            let image = await User.findByIdAndUpdate({ _id: req.user.id }, imageInfo)
+
+            res.status(200).json({ message: "Image uploaded" })
+
+        } else {
+            await editFile(req.file, user?.email)
+            res.status(200).json({ message: "Image edited" })
+        }
+
+    } catch (error) {
+        res.send(error)
+    }
+}
+
+const sendPassResetLink = async (req, res) => {
+    try {
+
+        let cred = req.body.credential
+
+        if (!cred) {
+            return res.status(400).json({ message: "Invalid Data" })
+        }
+
+        const userById = await User.findOne({ user_id: cred })
+        const userByEmail = await User.findOne({ email: cred })
+
+        let user = userById ? userById : userByEmail
+
+        if (!user) {
+            return res.status(404).json({ message: "User with this id doesn't found" })
+        }
+
+        let data = {
+            user: {
+                id: user._id,
+                userType: user.user_type
+            }
+        }
+
+        const verification_token = jwt.sign(data, accessToken, { expiresIn: "10m" })
+
+        passwordResetVerification(user?.email, verification_token)
+
+        res.status(200).json({ message: "verification email has been sent on your registered email" })
+
+    } catch (error) {
+        res.sendStatus(500)
+    }
+}
+
+const ResetPassword = async (req, res) => {
+    try {
+
+        const { password, confirmPassword } = req.body
+
+        const user = await User.findById({ _id: req.user.id })
+
+        if (!user) {
+            return res.status(401).json({ message: "Action not allowed" })
+        }
+
+        if (password !== confirmPassword || !password || !confirmPassword) {
+            return res.status(400).json({ message: "Password didn't match" })
+        }
+
+        const salt = await bcrypt.genSalt(10)
+        const securePass = await bcrypt.hash(password, salt)
+
+        await User.findByIdAndUpdate({ _id: req.user.id }, { password: securePass })
+
+        res.status(200).json({ message: "Password updated" })
+
+    } catch (error) {
+        res.sendStatus(500)
     }
 }
 
@@ -161,5 +285,9 @@ module.exports = {
     createUser,
     login,
     getUserData,
-    verifyUser
+    verifyUser,
+    editUserInfo,
+    editUserProfile,
+    sendPassResetLink,
+    ResetPassword
 }

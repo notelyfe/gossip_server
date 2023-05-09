@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { sendMessage, getAllMsg } = require('../Controllers/messageController')
+const { sendMessage, getAllMsg, deleteMessages } = require('../Controllers/messageController')
 const verifyJWT = require('../Middleware/verifyJwt')
 const { body } = require('express-validator')
 
@@ -10,5 +10,7 @@ router.post('/sendMsg', verifyJWT, [
 ], sendMessage)
 
 router.post('/getAllMsg', verifyJWT, getAllMsg)
+
+router.delete('/deleteMsg', verifyJWT, deleteMessages)
 
 module.exports = router
