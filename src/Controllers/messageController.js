@@ -11,10 +11,22 @@ const sendMessage = async (req, res) => {
             return res.sendStatus(400)
         }
 
+        let chatId = req.body.chatId
+
+        let chat = await Chat.findById({ _id: chatId })
+
+        let receivers = []
+
+        for(let i=0; i<chat.users.length; i++){
+            if(chat.users[i].toString() !== req.user.id){
+                receivers.push(chat.users[i])
+            }
+        }
+
         var newMsg = await Message.create({
-            chat: req.body.chatId,
+            chat: chatId,
             sender: req.user.id,
-            receiver: req.body.receiver,
+            receivers: receivers,
             content: req.body.content,
             isDeleted: false
         })

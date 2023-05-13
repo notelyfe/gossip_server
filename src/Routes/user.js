@@ -1,6 +1,17 @@
 const express = require('express')
 const router = express.Router()
-const { getAllUser, createUser, login, getUserData, verifyUser, editUserInfo, editUserProfile, sendPassResetLink, ResetPassword } = require('../Controllers/userController')
+const {
+    getAllUser,
+    createUser,
+    login,
+    getUserData,
+    verifyUser,
+    editUserInfo,
+    editUserProfile,
+    sendPassResetLink,
+    ResetPassword,
+    deleteUser
+} = require('../Controllers/userController')
 const { body } = require('express-validator')
 const verifyJWT = require('../Middleware/verifyJwt')
 const { upload } = require('../Middleware/multer')
@@ -27,5 +38,7 @@ router.put('/editUserProfile', verifyJWT, upload.single("profilePic"), editUserP
 router.post('/resetLink', sendPassResetLink)
 
 router.patch('/passwordReset', verifyJWT, ResetPassword)
+
+router.delete('/deleteUser', verifyJWT, deleteUser)
 
 module.exports = router

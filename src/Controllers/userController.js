@@ -1,4 +1,6 @@
 const User = require('../Model/User')
+const Chat = require('../Model/Chat')
+const Message = require('../Model/Message')
 const { validationResult } = require('express-validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
@@ -136,7 +138,7 @@ const login = async (req, res) => {
                     id: user.id
                 }
             }
-            const access_token = jwt.sign(data, accessToken, { expiresIn: "15m" })
+            const access_token = jwt.sign(data, accessToken, { expiresIn: "24h" })
             const refresh_token = jwt.sign(data, refreshToken, { expiresIn: "24h" })
 
             res.cookie("jwt", refresh_token, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })
@@ -280,6 +282,67 @@ const ResetPassword = async (req, res) => {
     }
 }
 
+const deleteUser = async (req, res) => {
+    try {
+
+        let id = req.user.id
+        let password = req.body.password
+
+        const user = await User.findById({ _id: id })
+
+        if (!user) {
+            return res.status(404).json({ message: "user doesn't exist" })
+        }
+
+        let comparePass = await bcrypt.compare(password, user.password)
+        if (!comparePass) {
+            return res.status(401).json({ message: "wrong password" })
+        }
+
+        if (user.profile_key !== null) {
+            await deleteFile(user.profile_key)
+        }
+
+        let chatIds = []
+        let msgIds = []
+
+        let allChat = await Chat.find({
+            users: { $elemMatch: { $eq: req.user.id } }
+        })
+        allChat.map((item) => {
+            if (item.isGroupChat === false) {
+                chatIds.push(item._id.toString())
+            }
+        })
+
+        for (let i = 0; i < chatIds.length; i++) {
+
+            let messages = await Message.find({ chat: chatIds[i].toString() })
+
+            if (messages.length > 0) {
+                messages.map((item) => {
+                    msgIds.push(item._id.toString())
+                })
+            }
+        }
+
+        for (let i = 0; i < msgIds.length; i++) {
+            await Message.findByIdAndDelete({ _id: msgIds[i] })
+        }
+
+        for (let i = 0; i < chatIds.length; i++) {
+            await Chat.findByIdAndDelete({ _id: chatIds[i] })
+        }
+
+        await User.findByIdAndDelete({ _id: req.user.id })
+
+        res.status(200).json({ message: "User Deleted" })
+
+    } catch (error) {
+        res.sendStatus(500)
+    }
+}
+
 module.exports = {
     getAllUser,
     createUser,
@@ -289,5 +352,6 @@ module.exports = {
     editUserInfo,
     editUserProfile,
     sendPassResetLink,
-    ResetPassword
+    ResetPassword,
+    deleteUser
 }
