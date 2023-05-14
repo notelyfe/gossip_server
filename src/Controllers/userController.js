@@ -167,7 +167,19 @@ const getUserData = async (req, res) => {
 const editUserInfo = async (req, res) => {
     try {
 
+        let user_by_userid = await User.findOne({ user_id: req.body.userId.toLowerCase() })
+        // let user_by_email = await User.findOne({ email: req.body.email.toLowerCase() })
+
+        // if (user_by_email) {
+        //     return res.status(400).json({ message: "User with this email already exist" })
+        // }
+
+        if (user_by_userid) {
+            return res.status(400).json({ message: "User id already taken" })
+        }
+
         const userInfo = await User.findById({ _id: req.user.id })
+
         if (!userInfo) {
             return res.status(401).json({ message: "token is tempered" })
         }
@@ -175,7 +187,7 @@ const editUserInfo = async (req, res) => {
         const newUserInfo = ({
             name: req.body.name,
             user_id: req.body.userId.toLowerCase(),
-            email: req.body.email.toLowerCase(),
+            // email: req.body.email.toLowerCase(),
         })
 
         await User.findByIdAndUpdate({ _id: req.user.id }, newUserInfo)
