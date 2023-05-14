@@ -20,16 +20,15 @@ const socketConnection = (socketServer) => {
             socket.join(room)
         })
 
-        socket.on("new messages", (newMessageReceived) => {
+        socket.on("new messages", (newMessageReceived, messages) => {
             var chat = newMessageReceived;
 
-            // chat.receiver.forEach((user) => {
-            //     if(user.)
-            // });
+            if (!chat.receivers) return console.log("user not found")
 
-            if (!chat.receiver) return console.log("user not found")
+            chat.receivers.forEach((user) => {
+                socket.in(user).emit("message received", newMessageReceived, messages)
+            });
 
-            socket.in(chat.receiver).emit("message received", newMessageReceived)
         })
 
         socket.off("setup", () => {
