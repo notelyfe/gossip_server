@@ -12,9 +12,6 @@
     "chat",
     "messaging"
   ],
-  "engines": {
-    "node": ">=14 <15"
-  },
   "author": "notelyfe",
   "license": "ISC",
   "dependencies": {
