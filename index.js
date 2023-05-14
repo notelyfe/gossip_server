@@ -10,8 +10,8 @@ const { socketConnection } = require('./src/Socket/socket')
 
 const port = process.env.PORT
 
-// app.use(cors())
-app.use(cors(corsControl))
+app.use(cors())
+// app.use(cors(corsControl))
 app.use(express.json())
 
 // <--middleware for cookies-->
