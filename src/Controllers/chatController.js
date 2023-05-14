@@ -1,5 +1,6 @@
 const Chat = require('../Model/Chat')
 const User = require('../Model/User')
+const Message = require('../Model/Message')
 
 const createChat = async (req, res) => {
 
@@ -82,13 +83,26 @@ const deleteChat = async (req, res) => {
 
         const { conversationId } = req.body
 
-        const conversationInfo = await ConversationRef.findById({ _id: conversationId })
+        const conversationInfo = await Chat.findById({ _id: conversationId })
 
         if (!conversationInfo) {
             return res.status(400).json({ message: "not found" })
         }
 
-        await ConversationRef.findByIdAndUpdate({ _id: conversationId }, { isDeleted: true })
+        if (conversationInfo.isGroupChat === false) {
+            let messages = await Message.find({ chat: conversationId })
+            let msgId = []
+
+            messages.map((msg) => {
+                msgId.push(msg._id.toString())
+            })
+
+            for (let i = 0; i < msgId.length; i++) {
+                await Message.findByIdAndDelete({ _id: msgId[i] })
+            }
+        }
+
+        await Chat.findByIdAndDelete({ _id: conversationId })
 
         res.status(200).json({ message: "Conversation Deleted" })
 

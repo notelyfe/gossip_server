@@ -1,4 +1,4 @@
-const whitelist = ['http://localhost:3000']
+const whitelist = ['http://localhost:3000', 'https://gossip.notelyfe.select']
 
 const corsControl = {
     origin: (origin, callback) => {

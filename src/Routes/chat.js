@@ -5,6 +5,6 @@ const verifyJWT = require('../Middleware/verifyJwt')
 
 router.post('/createChat', verifyJWT, createChat)
 router.get('/getAllChat', verifyJWT, getUsersChat)
-router.delete('/deleteConversation', verifyJWT, deleteChat)
+router.delete('/deleteChat', verifyJWT, deleteChat)
 
 module.exports = router
