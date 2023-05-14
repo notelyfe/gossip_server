@@ -9,7 +9,6 @@ const { uploadFile, deleteFile, editFile } = require('../Services/awsSdk')
 
 const accessToken = process.env.ACCESS_TOKEN_SECRET
 const refreshToken = process.env.REFRESH_TOKEN_SECRET
-const clientBaseUrl = process.env.CLIENT_BASE_URL
 
 const getAllUser = async (req, res) => {
 
@@ -88,7 +87,7 @@ const createUser = async (req, res) => {
 const verifyUser = async (req, res) => {
     try {
 
-        let verifyToken = req.query.verificationToken
+        let verifyToken = req.params.verificationToken
 
         if (!verifyToken) {
             return res.sendStatus(401)
@@ -104,7 +103,7 @@ const verifyUser = async (req, res) => {
 
         await User.findByIdAndUpdate({ _id: userData?.user?.id }, { isVerified: true })
 
-        res.redirect(`${clientBaseUrl}/login`)
+        res.status(200).json({ message: "E-mail verified successfully" })
 
     } catch (error) {
         res.status(500).json({ message: 'Internal Server Error' })
@@ -138,7 +137,7 @@ const login = async (req, res) => {
                     id: user.id
                 }
             }
-            const access_token = jwt.sign(data, accessToken, { expiresIn: "24h" })
+            const access_token = jwt.sign(data, accessToken, { expiresIn: "15m" })
             const refresh_token = jwt.sign(data, refreshToken, { expiresIn: "24h" })
 
             res.cookie("jwt", refresh_token, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })

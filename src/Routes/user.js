@@ -25,7 +25,7 @@ router.post('/createUser', [
     body("password").isLength({ min: 8 }),
 ], createUser)
 
-router.get('/verify', verifyUser)
+router.get('/verify/:verificationToken', verifyUser)
 
 router.post('/login', login)
 
