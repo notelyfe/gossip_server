@@ -14,7 +14,7 @@ const getAllUser = async (req, res) => {
 
     try {
 
-        let user = await User.find().select(["-password", "-profile_key"])
+        let user = await User.find({ isVerified: true }).select(["-password", "-profile_key"])
 
         user = user.filter((item) => {
             return item._id.toString() !== req.user.id
