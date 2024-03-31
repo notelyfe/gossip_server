@@ -5,7 +5,7 @@ const whitelist = ['https://gossip.notelyfe.me', 'https://notelyfe.me']
 
 const corsControl = {
     origin: (origin, callback) => {
-        if (whitelist.indexOf(origin) !== -1) {
+        if (allowedOrigin.indexOf(origin) !== -1 || !origin) {
             callback(null, origin)
         } else {
             callback(new Error('Not Allowed By Cors'))
