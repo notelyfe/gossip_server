@@ -1,5 +1,5 @@
 // const whitelist = ['https://gossip.notelyfe.me']
-const whitelist = ['https://gossip.notelyfe.live', 'https://notelyfe.live', "https://gossip-6dr.pages.dev"]
+const whitelist = ['https://gossip.notelyfe.live', 'https://notelyfe.live', "https://gossip-6dr.pages.dev", "https://gserver.notelyfe.live]
 
 // const whitelist = ['http://localhost:3000']
 
